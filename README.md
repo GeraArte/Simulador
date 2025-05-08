@@ -4,8 +4,8 @@ Este aplicativo simula a previsão do valor de pedido de um projeto, com base em
 
 ## Funcionalidades
 
-- Previsão de valor com acréscimo automático de 10%
-- Estimativa de tempo de instalação (base: R$25.000 por dia)
+- Previsão de valor
+- Estimativa de tempo de instalação
 - Histórico de simulações com filtros por UF, Tipo de Obra e Conceito
 - Botão para limpar histórico
 
