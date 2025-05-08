@@ -24,7 +24,6 @@ st.header("Simulando a Previsão do Valor Pedido")
 # Carregar o modelo treinado
 modelo = joblib.load('modelo_valor_pedido_simulador.pkl')
 
-
 # Opções para as variáveis categóricas
 ufs = ['SP', 'RJ', 'MG', 'BA', 'CE', 'PA', 'SC', 'RO', 'RS', 'PR', 'GO', 'AM', 'PE']
 tipos_obra = ['CVI - PROJETO GERAARTE', 'CVI - PROJETO CADERNO']
