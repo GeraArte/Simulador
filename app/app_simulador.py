@@ -25,10 +25,12 @@ st.header("Simulando a Previsão do Valor Pedido")
 modelo = joblib.load('modelo_valor_pedido_simulador.pkl')
 
 # Opções para as variáveis categóricas
-ufs = ['SP', 'RJ', 'MG', 'BA', 'CE', 'PA', 'SC', 'RO', 'RS', 'PR', 'GO', 'AM', 'PE']
+tipos_loja = ['Atacado', 'Varejo']  
 tipos_obra = ['CVI - PROJETO GERAARTE', 'CVI - PROJETO CADERNO']
 conceitos = ['ALTO', 'MÉDIO', 'POPULAR']
 fretes = ['CIF', 'FOB']
+faixas_raio = ['até 300', 'de 301 até 900', 'de 901 até 2.000', 'acima de 2.000']
+faixas_centrais = ['10%', '15%', '20%']
 
 if 'historico_simulacoes' not in st.session_state:
     st.session_state.historico_simulacoes = []
@@ -40,43 +42,46 @@ with st.form("form_simulacao"):
     col1, col2 = st.columns(2)
 
     with col1:
-        uf = st.selectbox("UF", options=ufs)
+        tipo_loja = st.selectbox("Tipo de Loja", options=tipos_loja)
         tipo_obra = st.selectbox("Tipo de Obra", options=tipos_obra)
         frete = st.selectbox("Tipo de Frete", options=fretes)
         conceito = st.selectbox("Padrão da Loja", options=conceitos)
 
     with col2:
         metros_quadrados = st.number_input("m²", min_value=0, max_value=10000, step=10)
-        qtd_ckt = st.number_input("Quantidade de Checkout", min_value=0, max_value=100, step=1)
-        perc_centrais = st.slider("% de Centrais", 0.0, 1.0, step=0.01)
-        distancia_bauru = st.number_input("Distância para Bauru (km)", min_value=0.0, max_value=5000.0, step=1.0)
+        perc_centrais_label = st.radio("% de Centrais", options=faixas_centrais, horizontal=True)
+        raio = st.selectbox("Raio", options=faixas_raio)
 
     submitted = st.form_submit_button("Simular")
 
     if submitted:
+        # Converter rótulo de faixa para valor numérico aproximado
+        conversao_centrais = {
+            '10%': 0.10,
+            '15%': 0.15,
+            '20%': 0.20,
+            '25%': 0.25,
+            '30%': 0.30,
+            'acima de 50%': 0.60
+        }
+        perc_centrais = conversao_centrais[perc_centrais_label]
+
         # Montar DataFrame com uma linha
         entrada = pd.DataFrame([{
-            'Cidade': 'Simulada',
-            'UF': uf,
-            'Frete': frete,
-            'Valor Produção': 0,
-            'Valor Instalação': 0,
-            'Pedido': 0,
+            'Tipo Loja': tipo_loja,
             'Tipo Obra': tipo_obra,
-            'BDI': 0,
-            'm²': metros_quadrados,
-            'Qtd Ckt': qtd_ckt,
+            'Frete': frete,
             'Conceito': conceito,
-            'Centrais': 0,
+            'm²': metros_quadrados,
             '% Centrais': perc_centrais,
-            'Distância para Bauru (km)': distancia_bauru
+            'Raio': raio
         }])
 
         # Previsão com acréscimo de 10%
         valor_previsto = modelo.predict(entrada)[0]
         valor_previsto *= 1.10
 
-        # Tempo de instalação (valor previsto dividido por 25, arredondado para cima)
+        # Tempo de instalação (valor previsto dividido por 25 mil, arredondado para cima)
         tempo_instalacao = math.ceil(valor_previsto / 25000)
 
         # Exibir resultados individuais
@@ -85,14 +90,13 @@ with st.form("form_simulacao"):
 
         # Salvar a simulação no histórico
         st.session_state.historico_simulacoes.append({
-            'UF': uf,
+            'Tipo Loja': tipo_loja,
             'Tipo Obra': tipo_obra,
             'Frete': frete,
             'Conceito': conceito,
             'm²': metros_quadrados,
-            'Qtd Ckt': qtd_ckt,
             '% Centrais': perc_centrais,
-            'Distância para Bauru (km)': distancia_bauru,
+            'Raio': raio,
             'Valor Pedido Previsto': valor_previsto,
             'Tempo Instalação (dias)': tempo_instalacao
         })
@@ -107,14 +111,14 @@ if st.session_state.historico_simulacoes:
         st.rerun()
 
     # Filtros
-    filtro_uf = st.multiselect("Filtrar por UF:", options=ufs)
+    filtro_tipo_loja = st.multiselect("Filtrar por Tipo de Loja:", options=tipos_loja)
     filtro_tipo_obra = st.multiselect("Filtrar por Tipo de Obra:", options=tipos_obra)
     filtro_conceito = st.multiselect("Filtrar por Conceito:", options=conceitos)
 
     historico_df = pd.DataFrame(st.session_state.historico_simulacoes)
 
-    if filtro_uf:
-        historico_df = historico_df[historico_df['UF'].isin(filtro_uf)]
+    if filtro_tipo_loja:
+        historico_df = historico_df[historico_df['Tipo Loja'].isin(filtro_tipo_loja)]
 
     if filtro_tipo_obra:
         historico_df = historico_df[historico_df['Tipo Obra'].isin(filtro_tipo_obra)]
