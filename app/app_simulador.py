@@ -130,7 +130,7 @@ if check_password():
             if not df_filtro.empty:
                 df_filtro['Emissão Pedido'] = pd.to_datetime(df_filtro['Emissão Pedido']).dt.strftime('%d/%m/%Y')
                 st.dataframe(
-                    df_filtro[['Obra', 'Valor Pedido', 'm²', '% Centrais', 'Raio', 'Emissão Pedido']]
+                    df_filtro[['Obra','Emissão Pedido', 'Valor Pedido', 'm²', '% Centrais', 'Raio']]
                     .reset_index(drop=True)
                     .style.format({"Valor Pedido": "R$ {:,.2f}"})
                 )
