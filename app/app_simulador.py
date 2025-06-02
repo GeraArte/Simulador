@@ -118,7 +118,7 @@ if check_password():
             }))
 
             st.subheader("Histórico real com combinação aproximada")
-            margem_m2 = 500
+            margem_m2 = 1000
             margem_valor = 100000
             df_filtro = df_base[
                 (df_base['Tipo Loja'].str.capitalize() == tipo_loja) &
